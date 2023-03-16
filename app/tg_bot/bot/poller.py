@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from asyncio import Task
 from typing import Optional
 
@@ -15,10 +16,11 @@ class Poller:
         offset = 0
         while True:
             res = await self.tg_client.get_updates_in_objects(offset=offset, timeout=60)
-            for u in res.result:
+            for u in res["result"]:
                 offset = u.update_id + 1
                 print(u)
                 self.queue.put_nowait(u)
+                logging.info("Я положить аптейды в очередь")
 
     async def start(self):
         self._task = asyncio.create_task(self._worker())

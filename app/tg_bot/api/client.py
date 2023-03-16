@@ -1,8 +1,9 @@
 from typing import Optional
 
 from aiohttp import ClientSession
+from marshmallow import INCLUDE
 
-from ..api.models import GetUpdatesResponse, SendMessageResponse
+from ..api.models import SendMessageResponse, MessageUpdateObj, ChatMemberUpdateObj, ChannelPostUpdateObj, UpdateObj
 
 
 class TgClient:
@@ -28,9 +29,23 @@ class TgClient:
         async with self.session.get(url, params=params) as resp:
             return await resp.json()
 
-    async def get_updates_in_objects(self, offset: Optional[int] = None, timeout: int = 0) -> GetUpdatesResponse:
+    async def get_updates_in_objects(self, offset: Optional[int] = None, timeout: int = 0) -> dict:
         res_dict = await self.get_updates(offset=offset, timeout=timeout)
-        return GetUpdatesResponse.Schema().load(res_dict)
+        return_upds = []
+
+        for update in res_dict["result"]:
+            if "message" in update:
+                return_upds.append(MessageUpdateObj.Schema().load(update))
+                continue
+            if "channel_post" in update:
+                return_upds.append(ChannelPostUpdateObj.Schema().load(update))
+                continue
+            if "chat_member" in update:
+                return_upds.append(ChatMemberUpdateObj.Schema().load(update))
+                continue
+            return_upds.append(UpdateObj.Schema().load(update))
+
+        return {"ok": res_dict["ok"], "result": return_upds}
 
     async def send_message(self, chat_id: int, text: str) -> SendMessageResponse:
         url = self.get_url("sendMessage")
