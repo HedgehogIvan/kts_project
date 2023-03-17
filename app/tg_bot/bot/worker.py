@@ -6,10 +6,12 @@ from marshmallow_dataclass import dataclass
 
 from ..api import TgClient
 from ..api import UpdateObj, ChannelPostUpdateObj
+from ...web.aiohttp_extansion import Application
 
 
 class Worker:
-    def __init__(self, queue: asyncio.Queue, tg_client: TgClient, concurrent_workers: int):
+    def __init__(self, app: Application, queue: asyncio.Queue, tg_client: TgClient, concurrent_workers: int):
+        self.app = app
         self.tg_client = tg_client
         self.queue = queue
         self.concurrent_workers = concurrent_workers
