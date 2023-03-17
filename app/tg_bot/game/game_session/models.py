@@ -22,7 +22,11 @@ class SessionModel(db):
     __tablename__ = "game_sessions"
 
     id = Column(Integer, primary_key=True)
-    chat_id = Column(BigInteger, ForeignKey("chats.tg_id", ondelete="CASCADE"), nullable=False)
+    chat_id = Column(
+        BigInteger,
+        ForeignKey("chats.tg_id", ondelete="CASCADE"),
+        nullable=False,
+    )
     start_game = Column(DateTime, nullable=False)
     end_game = Column(DateTime, nullable=True)
     players = relationship("UserModel")
@@ -33,5 +37,5 @@ class SessionModel(db):
             self.chat_id,
             self.start_game,
             [player_m.to_user() for player_m in self.players],
-            self.end_game
+            self.end_game,
         )

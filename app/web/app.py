@@ -19,10 +19,9 @@ app = Application()
 def setup_app() -> Application:
     setup_logging()
     setup_routes(app)
-    setup_aiohttp_apispec(app,
-                          title="TGBot MiniGame",
-                          url="/docs/json",
-                          swagger_path="/docs")
+    setup_aiohttp_apispec(
+        app, title="TGBot MiniGame", url="/docs/json", swagger_path="/docs"
+    )
     setup_middlewares(app)
     # TODO: Вынести передачу путя до конфиг файла в другое место
     setup_config(app, "config.yaml")

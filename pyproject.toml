@@ -9,6 +9,9 @@ exclude = '''
   | \.mypy_cache
   | \.tox
   | \.venv
+  | ^/etc
+  | ^/kts_backend
+  | ^/alembic
   | _build
   | buck-out
   | build

@@ -1,6 +1,10 @@
 import json
 
-from aiohttp.web_exceptions import HTTPUnprocessableEntity, HTTPException, HTTPConflict
+from aiohttp.web_exceptions import (
+    HTTPUnprocessableEntity,
+    HTTPException,
+    HTTPConflict,
+)
 from aiohttp.web_middlewares import middleware
 from aiohttp_apispec.middlewares import validation_middleware
 
@@ -41,7 +45,7 @@ async def error_handling_middleware(request: Request, handler):
             http_status=e.status,
             status=HTTP_ERROR_CODES[e.status],
             message="Такой объект уже существует",
-            data=data
+            data=data,
         )
     except HTTPException as e:
         return error_json_response(

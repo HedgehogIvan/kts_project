@@ -6,7 +6,10 @@ from sqlalchemy.orm import selectinload
 
 from ...base.base_accessor import BaseAccessor
 from ...tg_bot.game.chat.models import ChatModel, Chat
-from ...tg_bot.game.game_session.models import Session as Game, SessionModel as GameModel
+from ...tg_bot.game.game_session.models import (
+    Session as Game,
+    SessionModel as GameModel,
+)
 from ...tg_bot.game.score.models import ScoreModel, Score
 from ...tg_bot.game.user.models import UserModel, User
 
@@ -45,8 +48,12 @@ class ChatAccessor(BaseAccessor):
 
 
 class UserAccessor(BaseAccessor):
-    async def add_user(self, tg_id: int, chat_id: int, current_session: Optional[int] = None) -> User:
-        query = insert(UserModel).values(tg_id=tg_id, chat=chat_id, current_session=current_session)
+    async def add_user(
+        self, tg_id: int, chat_id: int, current_session: Optional[int] = None
+    ) -> User:
+        query = insert(UserModel).values(
+            tg_id=tg_id, chat=chat_id, current_session=current_session
+        )
 
         async with self.app.database.session() as session:
             await session.execute(query)
@@ -55,7 +62,11 @@ class UserAccessor(BaseAccessor):
         return User(tg_id, chat_id, current_session, [])
 
     async def get_chat_users(self, chat_tg_id: int) -> list[User]:
-        query = select(UserModel).where(UserModel.chat == chat_tg_id).options(selectinload(UserModel.scores))
+        query = (
+            select(UserModel)
+            .where(UserModel.chat == chat_tg_id)
+            .options(selectinload(UserModel.scores))
+        )
 
         async with self.app.database.session() as session:
             res: ChunkedIteratorResult = await session.execute(query)
@@ -65,10 +76,14 @@ class UserAccessor(BaseAccessor):
         return_users = [user.to_user() for user in users]
         return return_users
 
-    async def update_user_game_session(self, user_id: int, chat_id: int, session_id: int):
-        query = update(UserModel)\
-            .where(UserModel.tg_id == user_id and UserModel.chat == chat_id)\
+    async def update_user_game_session(
+        self, user_id: int, chat_id: int, session_id: int
+    ):
+        query = (
+            update(UserModel)
+            .where(UserModel.tg_id == user_id and UserModel.chat == chat_id)
             .values(current_session=session_id)
+        )
 
         async with self.app.database.session() as session:
             await session.execute(query)
@@ -77,8 +92,12 @@ class UserAccessor(BaseAccessor):
 
 
 class ScoreAccessor(BaseAccessor):
-    async def create_score(self, user_id: int, session_id: int, points: int = 0) -> Score:
-        query = insert(ScoreModel).values(user_id=user_id, session_id=session_id, points=points)
+    async def create_score(
+        self, user_id: int, session_id: int, points: int = 0
+    ) -> Score:
+        query = insert(ScoreModel).values(
+            user_id=user_id, session_id=session_id, points=points
+        )
 
         async with self.app.database.session() as session:
             res = await session.execute(query)
@@ -89,9 +108,14 @@ class ScoreAccessor(BaseAccessor):
         return Score(score_id, user_id, session_id, points)
 
     async def update_points(self, session_id: int, user_id: int, points: int):
-        query = update(ScoreModel)\
-            .where(ScoreModel.session_id == session_id and ScoreModel.user_id == user_id)\
+        query = (
+            update(ScoreModel)
+            .where(
+                ScoreModel.session_id == session_id
+                and ScoreModel.user_id == user_id
+            )
             .values(points=points)
+        )
 
         async with self.app.database.session() as session:
             await session.execute(query)
@@ -109,8 +133,13 @@ class ScoreAccessor(BaseAccessor):
         scores = [score_m.to_score() for score_m in scores_m]
         return scores
 
-    async def get_user_score_in_game(self, user_id: int, session_id: int) -> Optional[Score]:
-        query = select(ScoreModel).where(ScoreModel.user_id == user_id and ScoreModel.session_id == session_id)
+    async def get_user_score_in_game(
+        self, user_id: int, session_id: int
+    ) -> Optional[Score]:
+        query = select(ScoreModel).where(
+            ScoreModel.user_id == user_id
+            and ScoreModel.session_id == session_id
+        )
 
         async with self.app.database.session() as session:
             res: ChunkedIteratorResult = await session.execute(query)
@@ -125,20 +154,28 @@ class ScoreAccessor(BaseAccessor):
 class GameSessionAccessor(BaseAccessor):
     async def create_game(self, chat_id: int) -> Game:
         create_time = datetime.now()
-        query = insert(GameModel).values(chat_id=chat_id, start_game=create_time)
+        query = insert(GameModel).values(
+            chat_id=chat_id, start_game=create_time
+        )
 
         async with self.app.database.session() as session:
             res = await session.execute(query)
             await session.commit()
         game_id = res.inserted_primary_key[0]
 
-        return Game(id=game_id, chat_id=chat_id, start_game=create_time, players=[])
+        return Game(
+            id=game_id, chat_id=chat_id, start_game=create_time, players=[]
+        )
 
     async def get_last_game(self, chat: int) -> Optional[Game]:
-        query = select(GameModel)\
-            .where(GameModel.chat_id == chat)\
-            .order_by(GameModel.start_game.desc())\
-            .options(selectinload(GameModel.players).selectinload(UserModel.scores))
+        query = (
+            select(GameModel)
+            .where(GameModel.chat_id == chat)
+            .order_by(GameModel.start_game.desc())
+            .options(
+                selectinload(GameModel.players).selectinload(UserModel.scores)
+            )
+        )
 
         async with self.app.database.session() as session:
             res: ChunkedIteratorResult = await session.execute(query)
@@ -148,5 +185,9 @@ class GameSessionAccessor(BaseAccessor):
         game = game_m.to_session()
         return game
 
-    async def add_user_in_game(self, user_id: str, chat_id: str, session_id: int):
-        await self.app.store.users.update_user_game_session(user_id, chat_id, session_id)
+    async def add_user_in_game(
+        self, user_id: str, chat_id: str, session_id: int
+    ):
+        await self.app.store.users.update_user_game_session(
+            user_id, chat_id, session_id
+        )

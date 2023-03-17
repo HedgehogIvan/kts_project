@@ -9,10 +9,10 @@ from app.web.aiohttp_extansion import View
 
 
 def error_json_response(
-        http_status: int,
-        status: str = "error",
-        message: Optional[str] = None,
-        data: Optional[dict] = None,
+    http_status: int,
+    status: str = "error",
+    message: Optional[str] = None,
+    data: Optional[dict] = None,
 ):
     if data is None:
         data = {}
@@ -39,7 +39,9 @@ def available_for_admin(func):
         if "login" not in session_data and "id" not in session_data:
             raise HTTPUnauthorized
 
-        admin: Admin = await self.store.admins.get_by_login(session_data["login"])
+        admin: Admin = await self.store.admins.get_by_login(
+            session_data["login"]
+        )
 
         if admin and admin.id == session_data["id"]:
             return await func(self)

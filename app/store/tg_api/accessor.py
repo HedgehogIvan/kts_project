@@ -24,7 +24,9 @@ class TgApiAccessor(BaseAccessor):
         self.session = ClientSession()
         self.api_client = TgClient(self.token, self.session)
         self.poller = Poller(self.queue, self.api_client)
-        self.worker = Worker(self.app, self.queue, self.api_client, app.config.workers_count)
+        self.worker = Worker(
+            self.app, self.queue, self.api_client, app.config.workers_count
+        )
 
         await self._start()
 

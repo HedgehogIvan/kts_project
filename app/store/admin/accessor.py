@@ -45,7 +45,11 @@ class AdminAccessor(BaseAccessor):
             await session.commit()
 
     async def update_pass_admin(self, admin_login: str, new_pass: str):
-        query = update(AdminModel).where(AdminModel.login == admin_login).values(password=new_pass)
+        query = (
+            update(AdminModel)
+            .where(AdminModel.login == admin_login)
+            .values(password=new_pass)
+        )
 
         async with self.app.database.session() as session:
             await session.execute(query)

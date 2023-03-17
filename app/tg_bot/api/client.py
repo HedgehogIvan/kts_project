@@ -2,7 +2,13 @@ from typing import Optional
 
 from aiohttp import ClientSession
 
-from ..api.models import SendMessageResponse, MessageUpdateObj, ChatMemberUpdateObj, ChannelPostUpdateObj, UpdateObj
+from ..api.models import (
+    SendMessageResponse,
+    MessageUpdateObj,
+    ChatMemberUpdateObj,
+    ChannelPostUpdateObj,
+    UpdateObj,
+)
 
 
 class TgClient:
@@ -18,17 +24,21 @@ class TgClient:
         async with self.session.get(url) as resp:
             return await resp.json()
 
-    async def get_updates(self, offset: Optional[int] = None, timeout: int = 0) -> dict:
+    async def get_updates(
+        self, offset: Optional[int] = None, timeout: int = 0
+    ) -> dict:
         url = self.get_url("getUpdates")
         params = {}
         if offset:
-            params['offset'] = offset
+            params["offset"] = offset
         if timeout:
-            params['timeout'] = timeout
+            params["timeout"] = timeout
         async with self.session.get(url, params=params) as resp:
             return await resp.json()
 
-    async def get_updates_in_objects(self, offset: Optional[int] = None, timeout: int = 0) -> dict:
+    async def get_updates_in_objects(
+        self, offset: Optional[int] = None, timeout: int = 0
+    ) -> dict:
         res_dict = await self.get_updates(offset=offset, timeout=timeout)
         return_upds = []
 
@@ -46,12 +56,11 @@ class TgClient:
 
         return {"ok": res_dict["ok"], "result": return_upds}
 
-    async def send_message(self, chat_id: int, text: str) -> SendMessageResponse:
+    async def send_message(
+        self, chat_id: int, text: str
+    ) -> SendMessageResponse:
         url = self.get_url("sendMessage")
-        payload = {
-            'chat_id': chat_id,
-            'text': text
-        }
+        payload = {"chat_id": chat_id, "text": text}
         async with self.session.post(url, json=payload) as resp:
             res_dict = await resp.json()
             return SendMessageResponse.Schema().load(res_dict)

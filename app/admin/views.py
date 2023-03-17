@@ -11,7 +11,13 @@ from .models import Admin
 from .schemes import AdminScheme, AdminChangePasswordSchema, AdminDeleteSchema
 from ..web.utils import available_for_admin
 
-__all__ = ["AdminCreateView", "AdminLoginView", "AdminCurrentView", "AdminDeleteView", "AdminChangePassView"]
+__all__ = [
+    "AdminCreateView",
+    "AdminLoginView",
+    "AdminCurrentView",
+    "AdminDeleteView",
+    "AdminChangePassView",
+]
 
 
 class AdminCreateView(View):
@@ -28,10 +34,7 @@ class AdminCreateView(View):
 
         if not admin:
             new_admin = await self.store.admins.create_admin(login, password)
-            return json_response(data={
-                "id": new_admin.id,
-                "login": login
-            })
+            return json_response(data={"id": new_admin.id, "login": login})
         else:
             raise HTTPConflict
 
@@ -49,15 +52,9 @@ class AdminLoginView(View):
 
         if admin and admin.password == password:
             session = await new_session(request=self.request)
-            session["admin"] = {
-                "login": login,
-                "id": admin.id
-            }
+            session["admin"] = {"login": login, "id": admin.id}
 
-            return json_response(data={
-                "id": admin.id,
-                "login": login
-            })
+            return json_response(data={"id": admin.id, "login": login})
 
         raise HTTPForbidden
 
@@ -73,10 +70,7 @@ class AdminCurrentView(View):
         except:
             raise HTTPException
 
-        return json_response(data={
-            "id": admin["id"],
-            "login": admin["login"]
-        })
+        return json_response(data={"id": admin["id"], "login": admin["login"]})
 
 
 class AdminDeleteView(View):
@@ -87,22 +81,26 @@ class AdminDeleteView(View):
         session = await get_session(self.request)
 
         cur_admin = session["admin"]
-        full_admin_data: Optional[Admin] = await self.store.admins.get_by_login(cur_admin["login"])
+        full_admin_data: Optional[Admin] = await self.store.admins.get_by_login(
+            cur_admin["login"]
+        )
 
         if full_admin_data is None:
             raise Exception
 
         request_data = self.request["data"]
 
-        if await hash_password(request_data["password"]) != full_admin_data.password:
+        if (
+            await hash_password(request_data["password"])
+            != full_admin_data.password
+        ):
             raise Exception
 
         await self.store.admins.delete_admin(request_data["admin_for_delete"])
 
-        return json_response(data={
-            "id": cur_admin["id"],
-            "login": cur_admin["login"]
-        })
+        return json_response(
+            data={"id": cur_admin["id"], "login": cur_admin["login"]}
+        )
 
 
 class AdminChangePassView(View):
@@ -116,17 +114,20 @@ class AdminChangePassView(View):
         session = await get_session(self.request)
         cur_admin = session["admin"]
 
-        full_admin_data: Admin = await self.store.admins.get_by_login(cur_admin["login"])
+        full_admin_data: Admin = await self.store.admins.get_by_login(
+            cur_admin["login"]
+        )
 
         if full_admin_data.password != old_pass:
             raise Exception
 
-        await self.store.admins.update_pass_admin(full_admin_data.login, new_pass)
+        await self.store.admins.update_pass_admin(
+            full_admin_data.login, new_pass
+        )
 
-        return json_response(data={
-            "id": cur_admin["id"],
-            "login": cur_admin["login"]
-        })
+        return json_response(
+            data={"id": cur_admin["id"], "login": cur_admin["login"]}
+        )
 
 
 async def hash_password(password: str) -> str:

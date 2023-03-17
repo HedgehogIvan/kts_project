@@ -1,8 +1,10 @@
 from typing import Optional
 
-from aiohttp.web import (Application as AiohttpApplication,
-                         View as AiohttpView,
-                         Request as AiohttpRequest)
+from aiohttp.web import (
+    Application as AiohttpApplication,
+    View as AiohttpView,
+    Request as AiohttpRequest,
+)
 
 from ..store import Store
 from ..store.database.database import Database

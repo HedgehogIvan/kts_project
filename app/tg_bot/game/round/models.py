@@ -18,7 +18,17 @@ class RoundModel(db):
     __tablename__ = "rounds"
 
     id = Column(Integer, primary_key=True)
-    prev_round = Column(Integer, ForeignKey("rounds.id", ondelete='SET NULL'), nullable=True)
-    next_round = Column(Integer, ForeignKey("rounds.id", ondelete='SET NULL'), nullable=True)
-    session = Column(Integer, ForeignKey("game_sessions.id", ondelete="CASCADE"), nullable=False)
-    active_player = Column(BigInteger, ForeignKey("users.tg_id"), nullable=False)
+    prev_round = Column(
+        Integer, ForeignKey("rounds.id", ondelete="SET NULL"), nullable=True
+    )
+    next_round = Column(
+        Integer, ForeignKey("rounds.id", ondelete="SET NULL"), nullable=True
+    )
+    session = Column(
+        Integer,
+        ForeignKey("game_sessions.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    active_player = Column(
+        BigInteger, ForeignKey("users.tg_id"), nullable=False
+    )

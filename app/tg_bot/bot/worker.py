@@ -10,7 +10,13 @@ from ...web.aiohttp_extansion import Application
 
 
 class Worker:
-    def __init__(self, app: Application, queue: asyncio.Queue, tg_client: TgClient, concurrent_workers: int):
+    def __init__(
+        self,
+        app: Application,
+        queue: asyncio.Queue,
+        tg_client: TgClient,
+        concurrent_workers: int,
+    ):
         self.app = app
         self.tg_client = tg_client
         self.queue = queue
@@ -19,10 +25,14 @@ class Worker:
 
     async def handle_update(self, upd: dataclass):
         if hasattr(upd, "message"):
-            await self.tg_client.send_message(upd.message.chat.id, upd.message.text)
+            await self.tg_client.send_message(
+                upd.message.chat.id, upd.message.text
+            )
         if hasattr(upd, "channel_post"):
             channel_upd: ChannelPostUpdateObj = upd
-            await self.tg_client.send_message(channel_upd.channel_post.chat.id, channel_upd.channel_post.text)
+            await self.tg_client.send_message(
+                channel_upd.channel_post.chat.id, channel_upd.channel_post.text
+            )
         pass
 
     async def _worker(self):
@@ -36,7 +46,10 @@ class Worker:
                 self.queue.task_done()
 
     async def start(self):
-        self._tasks = [asyncio.create_task(self._worker()) for _ in range(self.concurrent_workers)]
+        self._tasks = [
+            asyncio.create_task(self._worker())
+            for _ in range(self.concurrent_workers)
+        ]
 
     async def stop(self):
         await self.queue.join()

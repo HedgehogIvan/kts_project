@@ -17,8 +17,16 @@ class ScoreModel(db):
     __tablename__ = "score"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(BigInteger, ForeignKey("users.tg_id", ondelete="CASCADE"), nullable=False)
-    session_id = Column(Integer, ForeignKey("game_sessions.id", ondelete="CASCADE"), nullable=True)
+    user_id = Column(
+        BigInteger,
+        ForeignKey("users.tg_id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    session_id = Column(
+        Integer,
+        ForeignKey("game_sessions.id", ondelete="CASCADE"),
+        nullable=True,
+    )
     points = Column(Integer, nullable=False)
 
     def to_score(self):
