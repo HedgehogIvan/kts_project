@@ -19,7 +19,7 @@ class Database:
 
     async def connect(self, *_: list, **__: dict) -> None:
         self._db = db
-        self._engine = create_async_engine("postgresql+asyncpg://kts_user:kts_pass@localhost:5432/kts_project",
+        self._engine = create_async_engine("postgresql+asyncpg://kts_user:kts_pass@localhost:5432/kts_project_v2",
                                            echo=True,
                                            future=True)
         self.session = async_sessionmaker(self._engine, expire_on_commit=False, class_=AsyncSession)

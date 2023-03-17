@@ -1,7 +1,6 @@
 from typing import Optional
 
 from aiohttp import ClientSession
-from marshmallow import INCLUDE
 
 from ..api.models import SendMessageResponse, MessageUpdateObj, ChatMemberUpdateObj, ChannelPostUpdateObj, UpdateObj
 
