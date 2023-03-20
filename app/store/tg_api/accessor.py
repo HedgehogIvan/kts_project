@@ -1,5 +1,5 @@
 import asyncio
-import typing
+import logging
 from typing import Optional
 from aiohttp import ClientSession
 
@@ -36,6 +36,8 @@ class TgApiAccessor(BaseAccessor):
         self.sender = Sender(self.api_client, self.to_sender_queue)
         await self._start()
 
+        logging.info("Бот запущен")
+
     async def disconnect(self, app: "Application"):
 
         """К сессии обращаются Worker и Poller,
@@ -45,6 +47,8 @@ class TgApiAccessor(BaseAccessor):
         # Сессия закрывается не сразу для этого нужно немного подождать
         await self.session.close()
         await asyncio.sleep(0.250)
+
+        logging.info("Бот остановлен")
 
     async def _start(self):
         await self.poller.start()

@@ -12,6 +12,9 @@ class Poller:
         self.queue = queue
         self._task: Optional[Task] = None
 
+        self.__logger: logging.Logger = logging.getLogger(__name__)
+        self.setup_logger()
+
     async def _worker(self):
         offset = 0
         while True:
@@ -22,10 +25,23 @@ class Poller:
                 offset = u.update_id + 1
                 print(u)
                 self.queue.put_nowait(u)
-                logging.info("Я положить аптейды в очередь")
+            self.__logger.debug("Аптейды отправлены в очередь")
 
     async def start(self):
         self._task = asyncio.create_task(self._worker())
+        self.__logger.info("Поллер запущен")
 
     async def stop(self):
         self._task.cancel()
+        self.__logger.info("Поллер остановлен")
+
+    def setup_logger(self):
+        self.__logger.setLevel(10)
+        handler = logging.FileHandler(f"etc/logs/{__name__}.log", mode="w")
+        formatter_ = logging.Formatter(
+            "%(name)s %(asctime)s %(levelname)s %(message)s"
+        )
+
+        handler.setFormatter(formatter_)
+
+        self.__logger.addHandler(handler)
