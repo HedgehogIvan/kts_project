@@ -1,33 +1,27 @@
 from dataclasses import dataclass
 
-from sqlalchemy import Column, Integer, ForeignKey, BigInteger
+from sqlalchemy import Column, Integer, ForeignKey
 
 from ....store.database.sqlalchemy_base import db
 
 
 @dataclass
 class Score:
-    id: int
-    user_id: int
-    session_id: int
-    points: int
+    player_id: int
+    value: int
 
 
 class ScoreModel(db):
-    __tablename__ = "score"
+    __tablename__ = "scores"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(
-        BigInteger,
-        ForeignKey("users.tg_id", ondelete="CASCADE"),
+    player_id = Column(
+        Integer,
+        ForeignKey("players.id", ondelete="CASCADE"),
+        unique=True,
         nullable=False,
     )
-    session_id = Column(
-        Integer,
-        ForeignKey("game_sessions.id", ondelete="CASCADE"),
-        nullable=True,
-    )
-    points = Column(Integer, nullable=False)
+    value = Column(Integer, nullable=False)
 
     def to_score(self):
-        return Score(self.id, self.user_id, self.session_id, self.points)
+        return Score(self.player_id, self.value)

@@ -1,34 +1,35 @@
 from dataclasses import dataclass
 
-from sqlalchemy import Column, Integer, ForeignKey, BigInteger
+from sqlalchemy import Column, Integer, ForeignKey, BigInteger, Boolean
 
 from ....store.database.sqlalchemy_base import db
 
 
 @dataclass
 class Round:
-    id: int
-    prev_round: int
-    next_round: int
-    session: int
-    active_player: int
+    player_id: int
+    session_id: int
+    round_number: int = 1
 
 
 class RoundModel(db):
     __tablename__ = "rounds"
 
     id = Column(Integer, primary_key=True)
-    prev_round = Column(
-        Integer, ForeignKey("rounds.id", ondelete="SET NULL"), nullable=True
+    player_id = Column(
+        BigInteger, ForeignKey("players.id", ondelete="SET NULL")
     )
-    next_round = Column(
-        Integer, ForeignKey("rounds.id", ondelete="SET NULL"), nullable=True
-    )
-    session = Column(
+    session_id = Column(
         Integer,
         ForeignKey("game_sessions.id", ondelete="CASCADE"),
+        unique=True,
         nullable=False,
     )
-    active_player = Column(
-        BigInteger, ForeignKey("users.tg_id"), nullable=False
-    )
+    round_number = Column(Integer, nullable=False, default=0)
+
+    def to_round(self):
+        return Round(
+            player_id=self.player_id,
+            session_id=self.session_id,
+            round_number=self.round_number,
+        )
