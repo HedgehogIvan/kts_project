@@ -26,7 +26,7 @@ class Database:
         self._db = db
         self._engine = create_async_engine(
             "postgresql+asyncpg://kts_user:kts_pass@localhost:5432/kts_project_v2",
-            echo=True,
+            echo=False,
             future=True,
         )
         self.session = async_sessionmaker(
