@@ -157,12 +157,18 @@ class ReplyKeyboard:
     selective: bool = False
 
 
+@dataclass
+class ReplyKeyboardRemove:
+    remove_keyboard: bool = True
+    selective: bool = False
+
+
 # TODO: Дополнить класс для отправки сообщений, оставшимися параметрами
 @dataclass
 class MessageToSend:
     chat_id: int
     text: str
-    reply_markup: InlineKeyboard | ReplyKeyboard | None = None
+    reply_markup: InlineKeyboard | ReplyKeyboard | ReplyKeyboardRemove | None = None
 
 
 @dataclass

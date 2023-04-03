@@ -8,7 +8,7 @@ from app.tg_bot.api import (
     UpdateMessage,
     ReplyKeyboard,
     KeyboardButton,
-    MessageUpdateObj,
+    MessageUpdateObj, ReplyKeyboardRemove,
 )
 from ..game.game_session.models import Session
 from ..game.game_time.models import GameTime
@@ -53,6 +53,7 @@ class Round(State):
                                 MessageToSend(
                                     self.chat_id,
                                     "Поздравляю первым успел этот участник",
+                                    ReplyKeyboardRemove()
                                 )
                             )
                             # Проверить есть ли раунд
