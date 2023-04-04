@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from sqlalchemy import Column, BigInteger, ForeignKey, Integer, Boolean
+from sqlalchemy import Column, BigInteger, ForeignKey, Integer, Boolean, Text
 from sqlalchemy.orm import relationship
 
 from ..score.models import Score
@@ -15,6 +15,7 @@ class Player:
     session_id: int
     alive: bool
     score: Optional[Score]
+    user_name: Optional[str]
 
 
 class PlayerModel(db):
@@ -29,6 +30,7 @@ class PlayerModel(db):
     )
     alive = Column(Boolean, unique=False, default=True)
     score = relationship("ScoreModel", uselist=False)
+    user_name = Column(Text, nullable=True)
 
     def to_player(self):
         return Player(
@@ -37,4 +39,5 @@ class PlayerModel(db):
             session_id=self.session_id,
             alive=self.alive,
             score=self.score,
+            user_name=self.user_name
         )

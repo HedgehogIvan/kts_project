@@ -133,9 +133,7 @@ class Worker:
             self.__logger.exception("Неизвестное обновление")
             raise Exception
 
-        session: Optional[
-            Session
-        ] = await self.app.store.game_sessions.get_session(chat.id)
+        session: Optional[Session] = await self.app.store.game_sessions.get_session(chat.id)
 
         # Это ответвление доступно как для MessageUpdateObj, так и для CallbackQueryObj
         if session:

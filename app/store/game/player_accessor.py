@@ -9,10 +9,10 @@ from ...tg_bot.game.player.models import Player, PlayerModel
 
 class PlayerAccessor(BaseAccessor):
     async def create_player(
-        self, session_id: int, user_id: int, alive: bool = True
+        self, session_id: int, user_id: int, user_name: Optional[str], alive: bool = True
     ) -> Player:
         query = insert(PlayerModel).values(
-            session_id=session_id, user_id=user_id, alive=alive
+            session_id=session_id, user_id=user_id, alive=alive, user_name=user_name
         )
 
         async with self.app.database.session() as session:
@@ -20,7 +20,7 @@ class PlayerAccessor(BaseAccessor):
             player_id = res.inserted_primary_key[0]
             await session.commit()
 
-        return Player(player_id, user_id, session_id, alive, None)
+        return Player(player_id, user_id, session_id, alive, None, user_name)
 
     async def get_player(
         self, session_id: int, user_id: int

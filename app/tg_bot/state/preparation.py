@@ -53,7 +53,9 @@ class Preparation(State):
             if self.callback.callback_query.data == "add_player":
                 if cur_player is None:
                     await self.store.players.create_player(
-                        self.session_id, self.callback.callback_query.from_.id
+                        self.session_id,
+                        self.callback.callback_query.from_.id,
+                        self.callback.callback_query.from_.username
                     )
                     return_messages.append(
                         AnswerForCallbackQuery(

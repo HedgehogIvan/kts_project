@@ -129,11 +129,16 @@ class Round(State):
 
         # TODO: Запинить сообщение с условиями игры
         ...
-        # TODO: Подключить хранение ссылки на пользователя, чтобы можно было показывать им клаву персонально
+        user_labels = ""
+
+        for player in players:
+            user_labels += f"@{player.user_name} "
+        user_labels += "\n\n"
+
         return_messages.append(
             MessageToSend(
                 self.chat_id,
-                "Кто хочет ответить на вопрос?\n",
+                f"{user_labels}Кто хочет ответить на вопрос?\n",
                 await self.__get_reply_keyboard(),
             )
         )
@@ -213,6 +218,7 @@ class Round(State):
 
         keyboard.keyboard.append([KeyboardButton("Ответить")])
         keyboard.one_time_keyboard = True
+        keyboard.selective = True
 
         return keyboard
 

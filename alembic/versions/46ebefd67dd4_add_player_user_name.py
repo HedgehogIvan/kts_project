@@ -1,8 +1,8 @@
-"""Fix game-session
+"""Add player user_name
 
-Revision ID: 06e8de408882
+Revision ID: 46ebefd67dd4
 Revises: 41d73dc34bb6
-Create Date: 2023-04-04 17:49:59.773801
+Create Date: 2023-04-04 19:51:34.136606
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '06e8de408882'
+revision = '46ebefd67dd4'
 down_revision = '41d73dc34bb6'
 branch_labels = None
 depends_on = None
@@ -56,6 +56,7 @@ def upgrade() -> None:
     sa.Column('user_id', sa.BigInteger(), nullable=False),
     sa.Column('session_id', sa.Integer(), nullable=False),
     sa.Column('alive', sa.Boolean(), nullable=True),
+    sa.Column('user_name', sa.Text(), nullable=True),
     sa.ForeignKeyConstraint(['session_id'], ['game_sessions.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )

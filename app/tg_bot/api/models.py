@@ -10,7 +10,7 @@ class MessageFrom:
     id: int
     first_name: str
     last_name: Optional[str]
-    username: str
+    username: Optional[str]
 
     class Meta:
         unknown = EXCLUDE
@@ -163,7 +163,6 @@ class ReplyKeyboardRemove:
     selective: bool = False
 
 
-# TODO: Дополнить класс для отправки сообщений, оставшимися параметрами
 @dataclass
 class MessageToSend:
     chat_id: int
