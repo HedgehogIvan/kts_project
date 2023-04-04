@@ -18,6 +18,9 @@ class TgClient:
         self.token = token
         self.session = session
 
+        self.__logger: logging.Logger = logging.getLogger(__name__)
+        self.__setup_logger()
+
     def get_url(self, method: str):
         return f"https://api.telegram.org/bot{self.token}/{method}"
 
@@ -123,3 +126,14 @@ class TgClient:
                 print()
         except Exception:
             logging.exception(Exception)
+
+    def __setup_logger(self):
+        self.__logger.setLevel(10)
+        handler = logging.FileHandler(f"etc/logs/{__name__}.log", mode="w")
+        formatter_ = logging.Formatter(
+            "%(name)s %(asctime)s %(levelname)s %(message)s"
+        )
+
+        handler.setFormatter(formatter_)
+
+        self.__logger.addHandler(handler)
