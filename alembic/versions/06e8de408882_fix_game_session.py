@@ -1,8 +1,8 @@
-"""Add game-bot tables test 3
+"""Fix game-session
 
-Revision ID: 9619a4cc1fba
+Revision ID: 06e8de408882
 Revises: 41d73dc34bb6
-Create Date: 2023-04-01 22:16:46.414563
+Create Date: 2023-04-04 17:49:59.773801
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '9619a4cc1fba'
+revision = '06e8de408882'
 down_revision = '41d73dc34bb6'
 branch_labels = None
 depends_on = None
@@ -39,7 +39,8 @@ def upgrade() -> None:
     sa.Column('question_id', sa.Integer(), nullable=True),
     sa.Column('used_answers', sa.ARRAY(sa.Text()), nullable=False),
     sa.ForeignKeyConstraint(['question_id'], ['questions.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('chat_id')
     )
     op.create_table('game_times',
     sa.Column('id', sa.Integer(), nullable=False),

@@ -22,7 +22,7 @@ class SessionModel(db):
     __tablename__ = "game_sessions"
 
     id = Column(Integer, primary_key=True)
-    chat_id = Column(BigInteger, nullable=False)
+    chat_id = Column(BigInteger, unique=True, nullable=False)
     current_state = Column(Text, nullable=False)
     question_id = Column(
         Integer, ForeignKey("questions.id", ondelete="SET NULL"), nullable=True

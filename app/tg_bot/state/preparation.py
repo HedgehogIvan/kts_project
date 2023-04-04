@@ -107,12 +107,25 @@ class Preparation(State):
                     )
                 )
 
-                await self.store.game_sessions.change_state(
-                    self.chat_id, "round"
-                )
+                players_number = await self.store.players.count_players_in_session(self.session_id)
 
-                state = Round(self.chat_id, self.store, self.session_id)
-                return_messages += await state.start()
+                if players_number == self.max_players:
+                    await self.store.game_sessions.change_state(
+                        self.chat_id, "round"
+                    )
+
+                    state = Round(self.chat_id, self.store, self.session_id)
+                    return_messages += await state.start()
+                else:
+                    logging.warning("Что-то не так, похоже был получен сторонний колбек или сломана клавиатура")
+
+            else:
+                return_messages.append(
+                    AnswerForCallbackQuery(
+                        str(self.callback.callback_query.query_id), None, None
+                    )
+                )
+                logging.warning("Получен неизвестный колбек")
 
         return return_messages
 
