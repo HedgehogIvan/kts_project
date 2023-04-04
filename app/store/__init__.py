@@ -10,15 +10,13 @@ class Store:
     def __init__(self, app: "Application"):
         from .admin.accessor import AdminAccessor
         from .tg_api.accessor import TgApiAccessor
-        from .game.accessor import (
-            AnswerAccessor,
-            GameSessionAccessor,
-            GameTimeAccessor,
-            QuestionAccessor,
-            PlayerAccessor,
-            RoundAccessor,
-            ScoreAccessor,
-        )
+        from .game.answer_accessor import AnswerAccessor
+        from .game.game_session_accessor import GameSessionAccessor
+        from .game.game_time_accessor import GameTimeAccessor
+        from .game.player_accessor import PlayerAccessor
+        from .game.question_accessor import QuestionAccessor
+        from .game.round_accessor import RoundAccessor
+        from .game.score_accessor import ScoreAccessor
 
         self.admins = AdminAccessor(app)
         self.answers = AnswerAccessor(app)
