@@ -78,7 +78,6 @@ class Round(State):
                             await self.store.game_sessions.change_state(
                                 self.chat_id, "movestate"
                             )
-                            # TODO: Вызвать состояние
                             state = MoveState(
                                 self.chat_id, self.session_id, self.store
                             )
