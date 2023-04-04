@@ -10,19 +10,23 @@ class Store:
     def __init__(self, app: "Application"):
         from .admin.accessor import AdminAccessor
         from .tg_api.accessor import TgApiAccessor
-        from .game.accessor import (
-            ChatAccessor,
-            UserAccessor,
-            GameSessionAccessor,
-            ScoreAccessor,
-        )
+        from .game.answer_accessor import AnswerAccessor
+        from .game.game_session_accessor import GameSessionAccessor
+        from .game.game_time_accessor import GameTimeAccessor
+        from .game.player_accessor import PlayerAccessor
+        from .game.question_accessor import QuestionAccessor
+        from .game.round_accessor import RoundAccessor
+        from .game.score_accessor import ScoreAccessor
 
         self.admins = AdminAccessor(app)
-        self.tg_api = TgApiAccessor(app)
-        self.chats = ChatAccessor(app)
-        self.users = UserAccessor(app)
-        self.games = GameSessionAccessor(app)
+        self.answers = AnswerAccessor(app)
+        self.game_sessions = GameSessionAccessor(app)
+        self.game_time = GameTimeAccessor(app)
+        self.questions = QuestionAccessor(app)
+        self.players = PlayerAccessor(app)
+        self.round = RoundAccessor(app)
         self.scores = ScoreAccessor(app)
+        self.tg_api = TgApiAccessor(app)
 
 
 def setup_store(app: "Application"):

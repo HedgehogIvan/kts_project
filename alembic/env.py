@@ -13,11 +13,12 @@ from app.store.database.sqlalchemy_base import db
 
 # See my models!!! (Detect models)
 from app.admin.models import AdminModel
-from app.tg_bot.game.chat.models import ChatModel
 from app.tg_bot.game.game_session.models import SessionModel
-from app.tg_bot.game.user.models import UserModel
 from app.tg_bot.game.round.models import RoundModel
 from app.tg_bot.game.score.models import ScoreModel
+from app.tg_bot.game.game_time.models import GameTimeModel
+from app.tg_bot.game.player.models import PlayerModel
+from app.tg_bot.question.models import QuestionModel, AnswerModel
 
 config = context.config
 

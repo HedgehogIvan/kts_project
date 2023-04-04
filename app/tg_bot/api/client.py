@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 
 from aiohttp import ClientSession
@@ -7,6 +8,7 @@ from ..api.models import (
     MessageUpdateObj,
     ChatMemberUpdateObj,
     ChannelPostUpdateObj,
+    CallbackQueryObj,
     UpdateObj,
 )
 
@@ -15,6 +17,9 @@ class TgClient:
     def __init__(self, token: str, session: ClientSession):
         self.token = token
         self.session = session
+
+        self.__logger: logging.Logger = logging.getLogger(__name__)
+        self.__setup_logger()
 
     def get_url(self, method: str):
         return f"https://api.telegram.org/bot{self.token}/{method}"
@@ -29,10 +34,12 @@ class TgClient:
     ) -> dict:
         url = self.get_url("getUpdates")
         params = {}
+
         if offset:
             params["offset"] = offset
         if timeout:
             params["timeout"] = timeout
+
         async with self.session.get(url, params=params) as resp:
             return await resp.json()
 
@@ -46,6 +53,9 @@ class TgClient:
             if "message" in update:
                 return_upds.append(MessageUpdateObj.Schema().load(update))
                 continue
+            if "callback_query" in update:
+                return_upds.append(CallbackQueryObj.Schema().load(update))
+                continue
             if "channel_post" in update:
                 return_upds.append(ChannelPostUpdateObj.Schema().load(update))
                 continue
@@ -57,10 +67,73 @@ class TgClient:
         return {"ok": res_dict["ok"], "result": return_upds}
 
     async def send_message(
-        self, chat_id: int, text: str
+        self, chat_id: int, text: str, reply_markup: Optional[dict] = None
     ) -> SendMessageResponse:
         url = self.get_url("sendMessage")
-        payload = {"chat_id": chat_id, "text": text}
-        async with self.session.post(url, json=payload) as resp:
-            res_dict = await resp.json()
-            return SendMessageResponse.Schema().load(res_dict)
+        if reply_markup:
+            payload = {
+                "chat_id": chat_id,
+                "text": text,
+                "reply_markup": reply_markup,
+            }
+        else:
+            payload = {"chat_id": chat_id, "text": text}
+
+        try:
+            async with self.session.post(url, json=payload) as resp:
+                res_dict = await resp.json()
+                return SendMessageResponse.Schema().load(res_dict)
+        except Exception:
+            logging.exception(Exception)
+            return None
+
+    async def send_callback_answer(
+        self,
+        callback_query_id: str,
+        text: Optional[str] = None,
+        show_alert: Optional[bool] = None,
+    ):
+        url = self.get_url("answerCallbackQuery")
+        payload = {"callback_query_id": callback_query_id}
+
+        if text:
+            payload["text"] = text
+        if show_alert:
+            payload["show_alert"] = show_alert
+
+        try:
+            async with self.session.post(url, json=payload) as resp:
+                res_dict = await resp.json()
+        except Exception:
+            logging.exception(Exception)
+
+    async def update_message(
+        self,
+        chat_id: int,
+        message_id: int,
+        text: str,
+        reply_markup: Optional[dict] = None,
+    ):
+        url = self.get_url("editMessageText")
+        payload = {"chat_id": chat_id, "message_id": message_id, "text": text}
+
+        if reply_markup:
+            payload["reply_markup"] = reply_markup
+
+        try:
+            async with self.session.post(url, json=payload) as resp:
+                res_dict = await resp.json()
+                print()
+        except Exception:
+            logging.exception(Exception)
+
+    def __setup_logger(self):
+        self.__logger.setLevel(10)
+        handler = logging.FileHandler(f"etc/logs/{__name__}.log", mode="w")
+        formatter_ = logging.Formatter(
+            "%(name)s %(asctime)s %(levelname)s %(message)s"
+        )
+
+        handler.setFormatter(formatter_)
+
+        self.__logger.addHandler(handler)
