@@ -12,9 +12,12 @@ from app.tg_bot.api import (
 )
 from ..game.game_session.models import Session
 from ..game.game_time.models import GameTime
+from ..question.models import Question
 
 
 class Round(State):
+    max_players = 1
+
     def __init__(
         self,
         chat_id: int,
@@ -35,7 +38,7 @@ class Round(State):
         if self.message:
             if self.message.message.text == "/stop":
                 return_messages.append(
-                    MessageToSend(self.chat_id, "Всем спасибо все свободны")
+                    MessageToSend(self.chat_id, "Игра завершена досрочно. Всем спасибо все свободны")
                 )
                 await self.stop()
             else:
@@ -47,7 +50,7 @@ class Round(State):
 
                 for player in players:
                     if self.message.message.from_.id == player.user_id:
-                        if player.alive:
+                        if player.alive and self.message.message.text.lower() == "ответить":
                             # Выдать сообщение об успехе
                             return_messages.append(
                                 MessageToSend(
@@ -107,8 +110,19 @@ class Round(State):
 
             try:
                 await self.store.game_sessions.set_question(self.session_id)
+                session: Session = await self.store.game_sessions.get_session(self.chat_id)
+                question: Question = await self.store.questions.get_question_by_id(session.question_id)
             except Exception:
                 logging.exception(Exception, exc_info=True)
+
+            return_messages.append(MessageToSend(
+                self.chat_id,
+                "Все в сборе, начинаем нашу игру"
+            ))
+            return_messages.append(MessageToSend(
+                self.chat_id,
+                f"Внимание вопрос:\n{question.title}?"
+            ))
         else:
             await self.store.round.update_round_number(
                 self.session_id, round_.round_number + 1
@@ -116,11 +130,11 @@ class Round(State):
 
         # TODO: Запинить сообщение с условиями игры
         ...
-        # TODO: Подключить хранение ссылки на пользователя, чтобы можно было показывать им клаву
+        # TODO: Подключить хранение ссылки на пользователя, чтобы можно было показывать им клаву персонально
         return_messages.append(
             MessageToSend(
                 self.chat_id,
-                "Кто первый нажмет, то и выиграет",
+                "Кто хочет ответить на вопрос?\n",
                 await self.__get_reply_keyboard(),
             )
         )
@@ -155,6 +169,7 @@ class Round(State):
                 self.session_id
             )
             round_number = round_.round_number
+            question: Question = await self.store.questions.get_question_by_id(session.question_id)
 
             # Сбор данных об участниках
             players = session.players
@@ -170,15 +185,24 @@ class Round(State):
                         players[i + 1] = temp
                         flag = True
 
+            # Сбор очков игроков
+            players_result = ""
+            player_number = 1
+            for player in players:
+                players_result += f"Игрок {player_number}: {player.score.value}\n"
+                player_number += 1
+            players_result = players_result[:-1]
+
             # Вывод сообщения
             message_text = (
                 f"Игра окончена всем спасибо\n"
+                f"Вопрос: {question.title}?\n"
+                f"Кол-во раундов: {round_number}\n"
                 f"Игра началась в: {start_game_time}\n"
                 f"Игра закончилась в: {end_game_time}\n"
-                f"Кол-во раундов: {round_number}\n"
                 f"\n"
                 f"Итоги:\n"
-                f"Игрок 1: {players[0].score.value}\n"
+                f"{players_result}"
             )
             # TODO: Разпинить сообщение
             # ...
@@ -189,7 +213,7 @@ class Round(State):
     async def __get_reply_keyboard() -> ReplyKeyboard:
         keyboard = ReplyKeyboard([])
 
-        keyboard.keyboard.append([KeyboardButton("Выбери меня")])
+        keyboard.keyboard.append([KeyboardButton("Ответить")])
         keyboard.one_time_keyboard = True
 
         return keyboard

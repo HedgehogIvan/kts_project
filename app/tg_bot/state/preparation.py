@@ -13,6 +13,8 @@ from app.tg_bot.api import (
 
 
 class Preparation(State):
+    max_players = 1
+
     def __init__(
         self,
         chat_id: int,
@@ -121,7 +123,10 @@ class Preparation(State):
 
         keyboard = await self.__get_keyboard()
         start_message = MessageToSend(
-            self.chat_id, "Кто хочет присоединиться к игре?", keyboard
+            self.chat_id,
+            "Добро пожаловать в игру 100 к 1\n"
+            "Кто хочет присоединиться к игре?",
+            keyboard
         )
         return_messages.append(start_message)
 
@@ -165,7 +170,7 @@ class Preparation(State):
         # else:
         #     new_keyboard = await self.__get_keyboard()
 
-        if players_number == 2:
+        if players_number == self.max_players:
             new_keyboard = await self.__get_keyboard(False, True, True)
         elif players_number > 0:
             new_keyboard = await self.__get_keyboard(True, True)
@@ -176,6 +181,7 @@ class Preparation(State):
         return UpdateMessage(
             self.chat_id,
             self.callback.callback_query.message.message_id,
-            f"Игроки: {players_number}/4",
+            f"Место сбора игроков\n"
+            f"Игроки: {players_number}/{self.max_players}",
             new_keyboard,
         )

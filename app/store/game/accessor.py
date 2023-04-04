@@ -254,7 +254,7 @@ class GameSessionAccessor(BaseAccessor):
 
     async def set_question(self, session_id, title: Optional[str] = None):
         if title:
-            question = await self.app.store.questions.get_question(title)
+            question = await self.app.store.questions.get_question_by_title(title)
 
             query = (
                 update(SessionModel)
@@ -306,8 +306,24 @@ class QuestionAccessor(BaseAccessor):
 
         return Question(question_id, title, answers)
 
-    async def get_question(self, title: str) -> Optional[Question]:
-        query = select(QuestionModel).where(QuestionModel.title == title)
+    async def get_question_by_title(self, title: str) -> Optional[Question]:
+        query = select(QuestionModel)\
+                .where(QuestionModel.title == title)\
+                .options(selectinload(QuestionModel.answers))
+
+        async with self.app.database.session() as session:
+            res: ChunkedIteratorResult = await session.execute(query)
+
+        question_m: QuestionModel = res.scalars().first()
+
+        if question_m:
+            return question_m.to_question()
+        return None
+
+    async def get_question_by_id(self, question_id: int):
+        query = select(QuestionModel)\
+                .where(QuestionModel.id == question_id)\
+                .options(selectinload(QuestionModel.answers))
 
         async with self.app.database.session() as session:
             res: ChunkedIteratorResult = await session.execute(query)
