@@ -141,7 +141,6 @@ class Round(State):
         return return_messages
 
     # TODO Дописать конец истории
-    # TODO Придумать, как не выкидывать сообщение о прерывании игры при финализации
     async def stop(self):
         await self.store.game_sessions.drop_session(self.chat_id)
 

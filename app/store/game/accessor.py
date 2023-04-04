@@ -295,14 +295,14 @@ class QuestionAccessor(BaseAccessor):
     async def create_question(
         self, title: str, answers: list[Answer]
     ) -> Question:
-        query = insert(QuestionModel).values(title=title, answers=answers)
+        query = insert(QuestionModel).values(title=title)
 
         async with self.app.database.session() as session:
             res: CursorResult = await session.execute(query)
             question_id = res.inserted_primary_key[0]
             await session.commit()
 
-        self.app.store.answers.create_answers(question_id, answers)
+        await self.app.store.answers.create_answers(question_id, answers)
 
         return Question(question_id, title, answers)
 
