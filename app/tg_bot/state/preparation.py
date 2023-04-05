@@ -174,9 +174,14 @@ class Preparation(State):
         return keyboard
 
     async def __get_update_message(self) -> UpdateMessage:
-        players_number = await self.store.players.count_players_in_session(
-            self.session_id
-        )
+        players = await self.store.players.get_players_in_session(self.session_id)
+        players_number = len(players)
+
+        username_str = ""
+        for player in players:
+            username_str += f"@{player.user_name}, "
+        username_str = username_str[:-2]
+        username_str += "\n"
 
         # if players_number == 4:
         #     new_keyboard = await self.__get_keyboard(False, True, True)
@@ -197,6 +202,7 @@ class Preparation(State):
             self.chat_id,
             self.callback.callback_query.message.message_id,
             f"Место сбора игроков\n"
-            f"Игроки: {players_number}/{self.max_players}",
+            f"Игроки {players_number}/{self.max_players}:\n"
+            f"{username_str}",
             new_keyboard,
         )

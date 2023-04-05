@@ -65,7 +65,7 @@ class MoveState(State):
                         await self.store.game_sessions.update_used_answers(
                             self.chat_id, used_answers
                         )
-                        message_text = f"Правильный ответ\nНаграда {reward}"
+                        message_text = f"Правильный ответ {cur_player.user_name}\nНаграда {reward}"
                 else:
                     await self.store.players.kick_out_player(
                         self.session_id, self.message.message.from_.id

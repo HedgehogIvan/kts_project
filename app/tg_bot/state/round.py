@@ -55,7 +55,7 @@ class Round(State):
                             return_messages.append(
                                 MessageToSend(
                                     self.chat_id,
-                                    "Поздравляю первым успел этот участник",
+                                    f"Поздравляю первым успел {player.user_name}",
                                     ReplyKeyboardRemove()
                                 )
                             )
@@ -190,11 +190,13 @@ class Round(State):
 
             # Сбор очков игроков
             players_result = ""
-            player_number = 1
             for player in players:
-                players_result += f"Игрок {player_number}: {player.score.value}\n"
-                player_number += 1
+                players_result += f"{player.user_name}: {player.score.value}\n"
             players_result = players_result[:-1]
+
+            winner: Optional[str] = None
+            if len(players):
+                winner = players[0].user_name
 
             # Вывод сообщения
             message_text = (
@@ -203,6 +205,8 @@ class Round(State):
                 f"Кол-во раундов: {round_number}\n"
                 f"Игра началась в: {start_game_time}\n"
                 f"Игра закончилась в: {end_game_time}\n"
+                f"\n"
+                f"Поздравляем победителя: @{winner}\n"
                 f"\n"
                 f"Итоги:\n"
                 f"{players_result}"
@@ -217,7 +221,7 @@ class Round(State):
         keyboard = ReplyKeyboard([])
 
         keyboard.keyboard.append([KeyboardButton("Ответить")])
-        keyboard.one_time_keyboard = True
+        keyboard.one_time_keyboard = False
         keyboard.selective = True
 
         return keyboard
