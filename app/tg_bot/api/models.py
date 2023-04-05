@@ -176,3 +176,10 @@ class UpdateMessage:
     message_id: int
     text: str
     reply_markup: Optional[InlineKeyboard] = None
+
+
+@dataclass
+class TraceableMessage:
+    session_id: int
+    type: str
+    message: MessageToSend

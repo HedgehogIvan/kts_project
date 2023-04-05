@@ -19,6 +19,7 @@ from app.tg_bot.game.score.models import ScoreModel
 from app.tg_bot.game.game_time.models import GameTimeModel
 from app.tg_bot.game.player.models import PlayerModel
 from app.tg_bot.question.models import QuestionModel, AnswerModel
+from app.tg_bot.bot.models import TraceableMessageModel
 
 config = context.config
 
