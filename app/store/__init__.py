@@ -17,6 +17,7 @@ class Store:
         from .game.question_accessor import QuestionAccessor
         from .game.round_accessor import RoundAccessor
         from .game.score_accessor import ScoreAccessor
+        from .bot.accessor import TraceableMessageAccessor
 
         self.admins = AdminAccessor(app)
         self.answers = AnswerAccessor(app)
@@ -27,6 +28,7 @@ class Store:
         self.round = RoundAccessor(app)
         self.scores = ScoreAccessor(app)
         self.tg_api = TgApiAccessor(app)
+        self.t_msg = TraceableMessageAccessor(app)
 
 
 def setup_store(app: "Application"):
