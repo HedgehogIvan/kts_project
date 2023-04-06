@@ -22,7 +22,7 @@ class TraceableMessageModel(db):
     type = Column(Text, nullable=False)
     message_id = Column(BigInteger, unique=True, nullable=False)
 
-    async def to_traceable_message(self):
+    def to_traceable_message(self):
         return TraceableMessage(
             chat_id=self.chat_id,
             session_id=self.session_id,
