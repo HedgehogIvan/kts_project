@@ -1,7 +1,7 @@
 from hashlib import sha256
 from typing import Optional
 
-from aiohttp.web_exceptions import HTTPForbidden, HTTPConflict, HTTPException
+from aiohttp.web_exceptions import HTTPForbidden, HTTPConflict, HTTPException, HTTPNotFound
 from aiohttp.web_response import json_response
 from aiohttp_apispec import request_schema, response_schema, querystring_schema
 from aiohttp_session import new_session, get_session
@@ -86,7 +86,7 @@ class AdminDeleteView(View):
         )
 
         if full_admin_data is None:
-            raise Exception
+            raise HTTPNotFound
 
         request_data = self.request["data"]
 
@@ -94,7 +94,7 @@ class AdminDeleteView(View):
             await hash_password(request_data["password"])
             != full_admin_data.password
         ):
-            raise Exception
+            raise HTTPForbidden
 
         await self.store.admins.delete_admin(request_data["admin_for_delete"])
 
@@ -119,7 +119,7 @@ class AdminChangePassView(View):
         )
 
         if full_admin_data.password != old_pass:
-            raise Exception
+            raise HTTPForbidden
 
         await self.store.admins.update_pass_admin(
             full_admin_data.login, new_pass

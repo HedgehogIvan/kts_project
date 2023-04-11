@@ -1,5 +1,3 @@
-from typing import Optional
-
 from sqlalchemy import select, ChunkedIteratorResult, insert, delete, update
 
 from ...admin.models import Admin, AdminModel
@@ -17,24 +15,20 @@ class AdminAccessor(BaseAccessor):
 
             await session.commit()
 
-            return Admin(id_, login, password)
+        return Admin(id_, login, password)
 
     async def get_by_login(self, login: str) -> Admin | None:
-        admin: Optional[AdminModel] = None
         query = select(AdminModel).where(AdminModel.login == login)
 
         async with self.app.database.session() as session:
             res: ChunkedIteratorResult = await session.execute(query)
 
-            try:
-                admin: AdminModel = res.scalars().first()
-            except:
-                print("Не получилось достать админа")
+        admin: AdminModel = res.scalars().first()
 
-            if admin:
-                return Admin(admin.id, admin.login, admin.password)
-            else:
-                return None
+        if admin:
+            return Admin(admin.id, admin.login, admin.password)
+        else:
+            return None
 
     async def delete_admin(self, login: str):
         query = delete(AdminModel).where(AdminModel.login == login)
