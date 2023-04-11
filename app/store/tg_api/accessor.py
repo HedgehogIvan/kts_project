@@ -33,7 +33,7 @@ class TgApiAccessor(BaseAccessor):
             self.api_client,
             app.config.workers_count,
         )
-        self.sender = Sender(self.api_client, self.to_sender_queue)
+        self.sender = Sender(self.app.store, self.api_client, self.to_sender_queue)
         await self._start()
 
         logging.info("Бот запущен")

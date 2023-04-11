@@ -12,6 +12,7 @@ from ....store.database.sqlalchemy_base import db
 class Session:
     id: int
     chat_id: int
+    bot_status: Optional[str]
     current_state: str
     question_id: Optional[int]
     players: list[Player]
@@ -23,6 +24,7 @@ class SessionModel(db):
 
     id = Column(Integer, primary_key=True)
     chat_id = Column(BigInteger, unique=True, nullable=False)
+    bot_status = Column(Text, nullable=True)
     current_state = Column(Text, nullable=False)
     question_id = Column(
         Integer, ForeignKey("questions.id", ondelete="SET NULL"), nullable=True
@@ -34,6 +36,7 @@ class SessionModel(db):
         return Session(
             id=self.id,
             chat_id=self.chat_id,
+            bot_status=self.bot_status,
             current_state=self.current_state,
             question_id=self.question_id,
             players=[player.to_player() for player in self.players],

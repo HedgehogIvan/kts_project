@@ -8,8 +8,12 @@ from app.tg_bot.api import (
     UpdateMessage,
     ReplyKeyboard,
     KeyboardButton,
-    MessageUpdateObj, ReplyKeyboardRemove,
+    MessageUpdateObj,
+    ReplyKeyboardRemove,
+    TraceableMessage as TMsgForSender,
+    UnpinChatMessage
 )
+from ..bot.models import TraceableMessage
 from ..game.game_session.models import Session
 from ..game.game_time.models import GameTime
 from ..question.models import Question
@@ -51,6 +55,8 @@ class Round(State):
                 for player in players:
                     if self.message.message.from_.id == player.user_id:
                         if player.alive and self.message.message.text.lower() == "ответить":
+                            session = await self.store.game_sessions.get_session(self.chat_id)
+                            question = await self.store.questions.get_question_by_id(session.question_id)
                             # Выдать сообщение об успехе
                             return_messages.append(
                                 MessageToSend(
@@ -59,6 +65,13 @@ class Round(State):
                                     ReplyKeyboardRemove()
                                 )
                             )
+                            if session.bot_status != "administrator":
+                                return_messages.append(
+                                    MessageToSend(
+                                        self.chat_id,
+                                        f"Внимание, вопрос:\n{question.title}?"
+                                    )
+                                )
                             # Проверить есть ли раунд
                             round_ = await self.store.round.get_round(
                                 self.session_id
@@ -107,21 +120,29 @@ class Round(State):
             for player in players:
                 await self.store.scores.create_score(player.id)
 
-            try:
-                await self.store.game_sessions.set_question(self.session_id)
-                session: Session = await self.store.game_sessions.get_session(self.chat_id)
-                question: Question = await self.store.questions.get_question_by_id(session.question_id)
-            except Exception:
-                logging.exception(Exception, exc_info=True)
+            await self.store.game_sessions.set_question(self.session_id)
+            session: Session = await self.store.game_sessions.get_session(self.chat_id)
+            question: Question = await self.store.questions.get_question_by_id(session.question_id)
 
             return_messages.append(MessageToSend(
                 self.chat_id,
                 "Все в сборе, начинаем нашу игру"
             ))
-            return_messages.append(MessageToSend(
-                self.chat_id,
-                f"Внимание вопрос:\n{question.title}?"
-            ))
+            if session.bot_status == "administrator":
+                return_messages.append(TMsgForSender(
+                    self.chat_id,
+                    self.session_id,
+                    "pin",
+                    MessageToSend(
+                        self.chat_id,
+                        f"Внимание, вопрос:\n{question.title}?"
+                    )
+                ))
+            else:
+                return_messages.append(MessageToSend(
+                    self.chat_id,
+                    f"Внимание, вопрос:\n{question.title}?"
+                ))
         else:
             await self.store.round.update_round_number(
                 self.session_id, round_.round_number + 1
@@ -145,11 +166,12 @@ class Round(State):
 
         return return_messages
 
-    # TODO Дописать конец истории
     async def stop(self):
         await self.store.game_sessions.drop_session(self.chat_id)
 
-    async def check_final(self) -> Optional[MessageToSend]:
+    async def check_final(self) -> list[MessageToSend | UnpinChatMessage]:
+        return_messages = []
+
         session: Session = await self.store.game_sessions.get_session(
             self.chat_id
         )
@@ -211,10 +233,21 @@ class Round(State):
                 f"Итоги:\n"
                 f"{players_result}"
             )
-            # TODO: Разпинить сообщение
-            # ...
+
+            return_messages.append(MessageToSend(self.chat_id, message_text))
+
+            if session.bot_status == "administrator":
+                unpin_msgs: list[TraceableMessage] = await self.store.t_msg.get_messages(self.chat_id, "pin")
+                for msg in unpin_msgs:
+                    return_messages.append(UnpinChatMessage(
+                        msg.chat_id,
+                        msg.message_id
+                    ))
+                    self.store.t_msg.delete_messages(self.chat_id, msg.type, msg.message_id)
+
             await self.stop()
-            return MessageToSend(self.chat_id, message_text)
+
+        return return_messages
 
     @staticmethod
     async def __get_reply_keyboard() -> ReplyKeyboard:

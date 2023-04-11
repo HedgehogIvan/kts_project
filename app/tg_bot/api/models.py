@@ -126,6 +126,17 @@ class SendMessageResponse:
         unknown = EXCLUDE
 
 
+@mm_dataclass
+class ChatMemberResponse:
+    ok: bool
+    result: ChatMember
+
+    Schema: ClassVar[Type[Schema]] = Schema
+
+    class Meta:
+        unknown = EXCLUDE
+
+
 @dataclass
 class AnswerForCallbackQuery:
     callback_query_id: str
@@ -180,6 +191,19 @@ class UpdateMessage:
 
 @dataclass
 class TraceableMessage:
+    chat_id: int
     session_id: int
     type: str
     message: MessageToSend
+
+
+@dataclass
+class UnpinChatMessage:
+    chat_id: int
+    message_id: Optional[int]
+
+
+@dataclass
+class GetChatMember:
+    chat_id: int
+    user_id: int = 6122536778

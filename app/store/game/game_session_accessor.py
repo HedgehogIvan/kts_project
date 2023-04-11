@@ -14,12 +14,14 @@ class GameSessionAccessor(BaseAccessor):
     async def create_session(
         self,
         chat_id: int,
+        bot_status: Optional[str] = None,
         cur_state: str = "preparation",
         question_id: int = None,
         players: list[Player] = None,
     ) -> Session:
         query_c_s = insert(SessionModel).values(
             chat_id=chat_id,
+            bot_status=bot_status,
             current_state=cur_state,
             question_id=question_id,
             used_answers=[],
@@ -48,7 +50,7 @@ class GameSessionAccessor(BaseAccessor):
             await session.commit()
 
         return Session(
-            game_session_id, chat_id, cur_state, question_id, players, []
+            game_session_id, chat_id, bot_status, cur_state, question_id, players, []
         )
 
     async def get_session(self, chat_id) -> Optional[Session]:
@@ -126,6 +128,20 @@ class GameSessionAccessor(BaseAccessor):
             update(SessionModel)
             .where(SessionModel.chat_id == chat_id)
             .values(used_answers=update_answers)
+        )
+
+        async with self.app.database.session() as session:
+            await session.execute(query)
+            await session.commit()
+
+    async def update_bot_status(self, chat_id: int, status: Optional[str]):
+        # chat_id используется вместо session_id так как в одном чате может быть только одна сессия,
+        # а значит при использовании этих полей результат будет один и тот же
+        # также данная функция может использовать
+        # до создания сессии (но после сообщения, которое инициирует её создание)
+        # что означает, что id сессии в таблицы иногда не предоставляется возможным
+        query = (
+            update(SessionModel).where(SessionModel.chat_id == chat_id).values(bot_status=status)
         )
 
         async with self.app.database.session() as session:

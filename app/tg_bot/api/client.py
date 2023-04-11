@@ -10,6 +10,7 @@ from ..api.models import (
     ChannelPostUpdateObj,
     CallbackQueryObj,
     UpdateObj,
+    ChatMemberResponse
 )
 
 
@@ -126,6 +127,31 @@ class TgClient:
                 print()
         except Exception:
             logging.exception(Exception)
+
+    async def pin_message(self, chat_id: int, message_id: int, disable_notification: Optional[bool] = None):
+        url = self.get_url("pinChatMessage")
+        if not disable_notification:
+            payload = {"chat_id": chat_id, "message_id": message_id}
+        else:
+            payload = {"chat_id": chat_id, "message_id": message_id, "disable_notification": disable_notification}
+
+        async with self.session.post(url, json=payload) as resp:
+            res_dict = await resp.json()
+
+    async def unpin_message(self, chat_id: int, message_id: Optional[int] = None):
+        url = self.get_url("unpinChatMessage")
+        payload = {"chat_id": chat_id, "message_id": message_id}
+
+        async with self.session.post(url, json=payload) as resp:
+            res_dict = await resp.json()
+
+    async def get_chat_member(self, chat_id: int, user_id: int = 6122536778):
+        url = self.get_url("getChatMember")
+        payload = {"chat_id": chat_id, "user_id": user_id}
+
+        async with self.session.post(url, json=payload) as resp:
+            res_dict = await resp.json()
+            return ChatMemberResponse.Schema().load(res_dict)
 
     def __setup_logger(self):
         self.__logger.setLevel(10)

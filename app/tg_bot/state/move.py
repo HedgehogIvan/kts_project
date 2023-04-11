@@ -80,9 +80,10 @@ class MoveState(State):
                         self.chat_id, "round"
                     )
                     state = Round(self.chat_id, self.store, self.session_id)
-                    final_message = await state.check_final()
-                    if final_message:
-                        return_messages.append(final_message)
+
+                    final_messages = await state.check_final()
+                    if len(final_messages):
+                        return_messages += final_messages
                     else:
                         return_messages += await state.start()
                 except Exception:
