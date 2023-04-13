@@ -8,6 +8,7 @@ from sqlalchemy.orm import selectinload
 from ...base.base_accessor import BaseAccessor
 from ...tg_bot.game.game_session.models import Session, SessionModel
 from ...tg_bot.game.player.models import Player, PlayerModel
+from ...tg_bot.question.models import Question
 
 
 class GameSessionAccessor(BaseAccessor):
@@ -96,7 +97,7 @@ class GameSessionAccessor(BaseAccessor):
             except Exception:
                 logging.warning("UPDATE не удалось произвести")
 
-    async def set_question(self, session_id, title: Optional[str] = None):
+    async def set_question(self, session_id, title: Optional[str] = None) -> Question:
         if title:
             question = await self.app.store.questions.get_question_by_title(title)
 
@@ -120,6 +121,8 @@ class GameSessionAccessor(BaseAccessor):
         async with self.app.database.session() as session:
             await session.execute(query)
             await session.commit()
+
+        return question
 
     async def update_used_answers(
         self, chat_id: int, update_answers: list[str]
