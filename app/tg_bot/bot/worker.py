@@ -18,6 +18,17 @@ from ..state.round import Round
 from ...web.aiohttp_extansion import Application
 
 
+class StateType:
+    preparation = "preparation"
+    round = "round"
+    movestate = "movestate"
+
+
+class UpdateAttrs:
+    message = "message"
+    callback_query = "callback_query"
+
+
 class Worker:
     def __init__(
         self,
@@ -42,11 +53,11 @@ class Worker:
     ) -> list[MessageToSend | AnswerForCallbackQuery]:
         messages_for_sender = []
 
-        if hasattr(upd, "message"):
+        if hasattr(upd, UpdateAttrs.message):
             self.__logger.debug(f"Получен апдейт типа 'message'")
             messages_for_sender += await self.__handle_message(upd)
 
-        elif hasattr(upd, "callback_query"):
+        elif hasattr(upd, UpdateAttrs.callback_query):
             self.__logger.debug(f"Получен апдейт типа 'callback'")
             messages_for_sender += await self.__handle_callback(upd)
 
@@ -59,7 +70,8 @@ class Worker:
             try:
                 upd = await self.to_worker_queue.get()
                 self.__logger.debug(f"Получен апдейт, {type(upd)}")
-                messages_to_send = await self.handle_update(upd)
+
+                messages_to_send: list[MessageToSend | AnswerForCallbackQuery] = await self.handle_update(upd)
                 self.__logger.debug(f"Апдейт обработан")
 
                 for message in messages_to_send:
@@ -101,7 +113,7 @@ class Worker:
         chat = message_upd.message.chat
 
         if chat.type == "supergroup" or chat.type == "group":
-            messages_for_send += await self.get_state_reaction(message_upd)
+            messages_for_send += await self.__get_state_reaction(message_upd)
 
         elif chat.type == "private":
             return_message = MessageToSend(
@@ -117,10 +129,10 @@ class Worker:
         self, callback_upd: CallbackQueryObj
     ) -> list[AnswerForCallbackQuery | UpdateMessage]:
         messages_for_send = []
-        messages_for_send += await self.get_state_reaction(callback_upd)
+        messages_for_send += await self.__get_state_reaction(callback_upd)
         return messages_for_send
 
-    async def get_state_reaction(
+    async def __get_state_reaction(
         self, update: MessageUpdateObj | CallbackQueryObj
     ) -> list[MessageToSend | AnswerForCallbackQuery | UpdateMessage]:
         messages_for_send = []
@@ -137,20 +149,31 @@ class Worker:
 
         # Это ответвление доступно как для MessageUpdateObj, так и для CallbackQueryObj
         if session:
-            state_type = session.current_state
-
-            if state_type.lower() == "preparation":
-                state = Preparation(chat.id, session.id, self.app.store, update)
-                messages_for_send += await state.handler()
-            elif state_type.lower() == "round":
-                state = Round(chat.id, self.app.store, session.id, update)
-                messages_for_send += await state.handler()
-            elif state_type.lower() == "movestate":
-                state = MoveState(chat.id, session.id, self.app.store, update)
-                messages_for_send += await state.handler()
+            messages_for_send += await self.__call_state(chat.id, session, update)
 
         elif type(update) is MessageUpdateObj:
             state = Idle(chat.id, self.app.store, update)
             messages_for_send += await state.handler()
 
         return messages_for_send
+
+    async def __call_state(
+            self,
+            chat_id: int,
+            session: Session,
+            update_obj: MessageUpdateObj | CallbackQueryObj
+    ) -> list[MessageToSend | AnswerForCallbackQuery | UpdateMessage]:
+        state_type = session.current_state
+        state_response = []
+
+        if state_type.lower() == StateType.preparation:
+            state = Preparation(chat_id, session.id, self.app.store, update_obj)
+            state_response += await state.handler()
+        elif state_type.lower() == StateType.round:
+            state = Round(chat_id, self.app.store, session.id, update_obj)
+            state_response += await state.handler()
+        elif state_type.lower() == StateType.movestate:
+            state = MoveState(chat_id, session.id, self.app.store, update_obj)
+            state_response += await state.handler()
+
+        return state_response
