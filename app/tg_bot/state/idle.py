@@ -1,7 +1,7 @@
 from . import *
 from .preparation import Preparation
-from app.tg_bot.game.game_session.models import Session
-from app.tg_bot.api import MessageUpdateObj, InlineKeyboard, InlineButton, GetChatMember
+from ..game.game_session.models import Session
+from ..api import MessageUpdateObj, InlineKeyboard, InlineButton, GetChatMember
 
 
 class Idle(State):
@@ -12,13 +12,13 @@ class Idle(State):
 
     async def handler(self):
         if self.message_upd.message.text in ["start", "/start", "начать"]:
-            return await self.__prepare_for_next_state("preparation")
+            return await self.__prepare_for_next_state(StateType.preparation)
 
     async def __prepare_for_next_state(
         self, next_state: str
     ) -> list[MessageToSend | GetChatMember]:
         return_messages = []
-        if next_state == "preparation":
+        if next_state == StateType.preparation:
             game_session: Session = (
                 await self.store.game_sessions.create_session(self.chat_id)
             )
