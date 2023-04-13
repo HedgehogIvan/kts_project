@@ -15,7 +15,7 @@ from ..state.idle import Idle
 from ..state.move import MoveState
 from ..state.preparation import Preparation
 from ..state.round import Round
-from ...web.aiohttp_extansion import Application
+from app.web.aiohttp_extansion import Application
 
 
 class StateType:
