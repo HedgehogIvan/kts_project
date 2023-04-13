@@ -22,63 +22,6 @@ class Sender:
         self.__logger: logging.Logger = logging.getLogger(__name__)
         self.__setup_logger()
 
-    async def send_message(self, message: MessageToSend):
-        if message.reply_markup:
-            dict_reply_markup = asdict(message.reply_markup)
-            await self.tg_client.send_message(
-                message.chat_id, message.text, dict_reply_markup
-            )
-        else:
-            await self.tg_client.send_message(message.chat_id, message.text)
-
-    async def send_answer(self, answer: AnswerForCallbackQuery):
-        await self.tg_client.send_callback_answer(
-            callback_query_id=answer.callback_query_id,
-            text=answer.text,
-            show_alert=answer.show_alert,
-        )
-
-    async def send_traceable_message(self, traceable_message: TraceableMessage):
-        message = traceable_message.message
-
-        res = await self.tg_client.send_message(
-            message.chat_id, message.text
-        )
-
-        await self.tg_client.pin_message(traceable_message.chat_id, res.result.message_id, True)
-
-        await self.store.t_msg.create_message(
-            message.chat_id,
-            traceable_message.session_id,
-            traceable_message.type,
-            res.result.message_id
-        )
-
-    async def unpin_message(self, message_data: UnpinChatMessage):
-        await self.tg_client.unpin_message(
-            message_data.chat_id,
-            message_data.message_id
-        )
-
-    async def update_message(self, message: UpdateMessage):
-        if message.reply_markup:
-            dict_reply_markup = asdict(message.reply_markup)
-            await self.tg_client.update_message(
-                message.chat_id,
-                message.message_id,
-                message.text,
-                dict_reply_markup,
-            )
-        else:
-            await self.tg_client.update_message(
-                message.chat_id, message.message_id, message.text
-            )
-
-    async def get_chat_member(self, request: GetChatMember):
-        res: ChatMemberResponse = await self.tg_client.get_chat_member(request.chat_id, request.user_id)
-
-        await self.store.game_sessions.update_bot_status(request.chat_id, res.result.status)
-
     async def _sender(self):
         while True:
             try:
@@ -141,3 +84,61 @@ class Sender:
         handler.setFormatter(formatter_)
 
         self.__logger.addHandler(handler)
+
+    async def send_message(self, message: MessageToSend):
+        if message.reply_markup:
+            dict_reply_markup = asdict(message.reply_markup)
+
+            await self.tg_client.send_message(
+                message.chat_id, message.text, dict_reply_markup
+            )
+        else:
+            await self.tg_client.send_message(message.chat_id, message.text)
+
+    async def send_answer(self, answer: AnswerForCallbackQuery):
+        await self.tg_client.send_callback_answer(
+            callback_query_id=answer.callback_query_id,
+            text=answer.text,
+            show_alert=answer.show_alert,
+        )
+
+    async def send_traceable_message(self, traceable_message: TraceableMessage):
+        message = traceable_message.message
+
+        res = await self.tg_client.send_message(
+            message.chat_id, message.text
+        )
+
+        await self.tg_client.pin_message(traceable_message.chat_id, res.result.message_id, True)
+
+        await self.store.t_msg.create_message(
+            message.chat_id,
+            traceable_message.session_id,
+            traceable_message.type,
+            res.result.message_id
+        )
+
+    async def unpin_message(self, message_data: UnpinChatMessage):
+        await self.tg_client.unpin_message(
+            message_data.chat_id,
+            message_data.message_id
+        )
+
+    async def update_message(self, message: UpdateMessage):
+        if message.reply_markup:
+            dict_reply_markup = asdict(message.reply_markup)
+            await self.tg_client.update_message(
+                message.chat_id,
+                message.message_id,
+                message.text,
+                dict_reply_markup,
+            )
+        else:
+            await self.tg_client.update_message(
+                message.chat_id, message.message_id, message.text
+            )
+
+    async def get_chat_member(self, request: GetChatMember):
+        res: ChatMemberResponse = await self.tg_client.get_chat_member(request.chat_id, request.user_id)
+
+        await self.store.game_sessions.update_bot_status(request.chat_id, res.result.status)
