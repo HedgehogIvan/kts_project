@@ -1,0 +1,3 @@
+bot:
+  token: "<bot_secret_key>"
+  workers_count: 1
